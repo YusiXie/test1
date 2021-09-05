@@ -42,14 +42,11 @@ constraintMatrix <-rbind(c(1,-1,0,0,0,0,0,0),
                          c(0,0,0,0,0,1,1,-1))
 
 
-const_directions <- rep("=",4)
+const_directions <- rep(">=",4)
 
-my_bound<-V_bound(li=1:2, lb=c(50,0))
-
-model_create <-OP(objectiveFunction, L_constraint(constraintMatrix, const_directions,constraintValues), maximum = TRUE, bounds = my_bound)
-
+my_bound<-V_bound(ui=1:8, ub=c(400,1000,400,1000,300,1000,300,1000))
+model_create <-OP(objectiveFunction, L_constraint(constraintMatrix, const_directions,constraintValues), maximum = FALSE, bounds = my_bound)
 model_solve<-ROI_solve(model_create)
-
 model_solve$solution
 
 
@@ -71,6 +68,20 @@ A can of Red Bull contains 168 calories and 2 oz of sugar.
 A candy bar contains about 200 calories and 3 oz of sugar.
 
 What is the total cost to consume the proper amount of food and how much of each food should be bought?
+
+```{r}
+library(ROI)
+library(ROI.plugin.glpk)
+objectiveFunction <- c(3,1,1.5,1)
+constraintValues<-c(2000,10)
+constraintMatrix <-rbind(c(285,100,168,200),
+                         c(0,0.5,2,3))
+const_directions <- rep(">=",2)
+model_create <-OP(objectiveFunction, L_constraint(constraintMatrix, const_directions,constraintValues), maximum = FALSE)
+model_solve<-ROI_solve(model_create)
+model_solve$solution
+```
+
 
 
 ### Question 3: Steel Mill Emissions
@@ -127,6 +138,22 @@ $$
 $$x_j \leq 1$$
 
 What is each abatement methods optimal proportion?
+```{r}
+library(ROI)
+library(ROI.plugin.glpk)
+objectiveFunction <- c(8,10,7,6,11,9)
+constraintValues<-c(60,150,125)
+constraintMatrix <-rbind(c(12,9,25,20,17,13),
+                         c(35,42,18,31,56,49),
+                         c(37,53,28,24,29,20))
+const_directions <- rep(">=",3)
+my_bound1<-V_bound(ui=1:6, ub=c(1,1,1,1,1,1))
+model_create <-OP(objectiveFunction, L_constraint(constraintMatrix, const_directions,constraintValues), maximum = FALSE,bounds=my_bound1)
+model_solve<-ROI_solve(model_create)
+model_solve$solution
+
+```
+
 
 
 ## Silver
@@ -134,7 +161,61 @@ What is each abatement methods optimal proportion?
 Let's extend that question 1 just a little bit more.
 
 The cost of production over the next four months will go up by 2 dollars a month, starting at 12 dollars. Every unit that gets made needs to go into storage and it requires 2 dollars to store each unit. Every unit made requires 30 minutes of labor and labor costs 12 dollars per hour. Fortunately, exact demand and available labor are known months in advance and are as follows: demand = 100, 200, 150, 400; max labor hours = 200, 200, 150, 150. Anything made during a month can be stored and reused the following month. Add labor costs and resources to your model, and then report 
+```{r}
+library(ROI)
+library(ROI.plugin.glpk)
+
+objectiveFunction <-c(18,2,20,2,22,2,24,2)
+
+constraintValues<-c(100,200,150,400)
+
+constraintMatrix <-rbind(c(1,-1,0,0,0,0,0,0),
+                         c(0,1,1,-1,0,0,0,0),
+                         c(0,0,0,1,1,-1,0,0),
+                         c(0,0,0,0,0,1,1,-1))
+
+
+const_directions <- rep(">=",4)
+
+my_bound<-V_bound(ui=1:8, ub=c(400,1000,400,1000,300,1000,300,1000))
+model_create <-OP(objectiveFunction, L_constraint(constraintMatrix, const_directions,constraintValues), maximum = FALSE, bounds = my_bound)
+model_solve<-ROI_solve(model_create)
+model_solve$solution
+```
+
 
 ## Gold
 
 The hardest of all questions -- put down your Google and create your own linear optimization problem! It can be a minimization or maximization problem. You need at least 3 variables and at least 3 constraints. Explain the set-up, write the notation, code it up, and then tell me what you found! Seriously, no need to involve Google in this -- come up with something on your own.
+
+My own question:
+It is important to maintain a good balance between work and life, but I still need to review and do my homework. There are 4 subjects and they are Intro to statistics(X1), Data Visualization(X2), Data Management(X3) and Simulation and Optimization(X4). I want to minimize the effort I spend on homework, but I still have limits of time, energy and utility.
+```{r}
+data.frame(method = c("time", "energy", "utility"), 
+           Statistics = c(1,2,1), 
+           Data_visualization = c(2,3,1),
+           Data_management = c(1,1,2),
+           Sim_and_ops = c(2,2,3))
+```
+I have 8 hours a day to study, 10 points energy and my utility should be at least 10.
+
+My answer:
+```{r}
+library(ROI)
+library(ROI.plugin.glpk)
+objectiveFunction <- c(1,1,1,1)
+constraintValues<-c(8,10,10)
+constraintMatrix <-rbind(c(1,2,1,2),
+                         c(2,3,1,2),
+                         c(1,1,2,3))
+const_directions <- c("<=","<=",">=")
+my_bound2<-V_bound(li=1:4,lb =c(1,1,1,1))
+model_create <-OP(objectiveFunction, L_constraint(constraintMatrix, const_directions,constraintValues), maximum = FALSE,bounds=my_bound2)
+model_solve<-ROI_solve(model_create)
+model_solve$solution
+```
+My conclusions:
+1. It is quite difficult to decide the utility and energy. 
+2. The result would be different if I didn't set the bound for these variables. Many of these variables would be 0 and this is obviously unreasonable.
+3. It seems that I should spend more time on Simulation and optimization.
+
